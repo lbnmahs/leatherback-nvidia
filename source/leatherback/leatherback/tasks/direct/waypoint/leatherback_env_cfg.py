@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from leatherback.robots.leatherback import LEATHERBACK_CFG
+from leatherback.assets.robots.leatherback import LEATHERBACK_CFG
 from .waypoints import WAYPOINT_CFG
 from .markers import ROBOT_MARKER_CFG
 
