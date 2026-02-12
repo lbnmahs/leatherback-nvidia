@@ -269,18 +269,25 @@ class LeatherbackStage1SoccerEnv(DirectMARLEnv):
         enemy_0_buffer = torch.zeros((self.num_envs, 3), device=self.device, dtype=torch.float32)
         enemy_1_buffer = torch.zeros((self.num_envs, 3), device=self.device, dtype=torch.float32)
 
-        obs = torch.cat((
-            robot_vel, # Robot velocity in world frame (3)
-            ball_pos,  # Ball position in robot frame (3)
-            ball_vel, # Ball velocity in robot frame (3)
-            target_goal_pos, # Target goal position in robot frame (3)
-            other_goal_pos,  # other goal position in robot frame (3)
-            teammate_buffer,  # Teammate position in robot frame (3)
-            enemy_0_buffer,  # Enemy 0 position in robot frame (3)
-            enemy_1_buffer,  # Enemy 1 position in robot frame (3)
-        ), dim=-1)
+        obs = torch.cat(
+            (
+                robot_vel,  # Robot velocity in world frame (3)
+                ball_pos,  # Ball position in robot frame (3)
+                ball_vel,  # Ball velocity in robot frame (3)
+                target_goal_pos,  # Target goal position in robot frame (3)
+                other_goal_pos,  # other goal position in robot frame (3)
+                teammate_buffer,  # Teammate position in robot frame (3)
+                enemy_0_buffer,  # Enemy 0 position in robot frame (3)
+                enemy_1_buffer,  # Enemy 1 position in robot frame (3)
+            ),
+            dim=-1,
+        )
 
-        obs = torch.nan_to_num(obs, nan=0.0, posinf=1e6, neginf=-1e6)
+        # ensure observations are always finite and reasonably bounded
+        # - replace any NaN/Inf with 0
+        # - clip extreme magnitudes to avoid numerical issues in RL algorithms
+        obs = torch.nan_to_num(obs, nan=0.0, posinf=0.0, neginf=0.0)
+        obs = torch.clamp(obs, -1e3, 1e3)
 
         return {"robot_0": obs}
     
@@ -306,13 +313,20 @@ class LeatherbackStage1SoccerEnv(DirectMARLEnv):
         goal_reward[ball_in_goal2 & (self.target_goal == 0)] = -1.0
 
         rewards = {
-            "dist_to_ball_reward": robot_distance_to_ball_mapped * self.cfg.dist_to_ball_reward_scale * self.step_dt,
-            "ball_to_goal_reward": ball_distance_to_goal_mapped  * self.cfg.ball_to_goal_reward_scale * self.step_dt,
+            "dist_to_ball_reward": robot_distance_to_ball_mapped
+            * self.cfg.dist_to_ball_reward_scale
+            * self.step_dt,
+            "ball_to_goal_reward": ball_distance_to_goal_mapped
+            * self.cfg.ball_to_goal_reward_scale
+            * self.step_dt,
             "goal_reward": goal_reward * self.cfg.goal_reward_scale,
         }
 
-        rewards = {k: torch.nan_to_num(v, nan=0.0, posinf=1e6, neginf=-1e6)
-                for k, v in rewards.items()}
+        # keep rewards finite and within a safe range to avoid NaNs in value estimates
+        rewards = {
+            k: torch.clamp(torch.nan_to_num(v, nan=0.0, posinf=0.0, neginf=0.0), -1e6, 1e6)
+            for k, v in rewards.items()
+        }
 
         reward = torch.sum(torch.stack([rewards[key] for key in rewards.keys()]), dim=0)
 

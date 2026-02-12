@@ -54,7 +54,6 @@ from rsl_rl.runners import OnPolicyRunner
 from isaaclab.envs import DirectMARLEnv, multi_agent_to_single_agent
 from isaaclab.utils.assets import retrieve_file_path
 from isaaclab.utils.dict import print_dict
-from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 
 from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper, export_policy_as_jit, export_policy_as_onnx
 
@@ -66,6 +65,18 @@ from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
 
 def main():
     """Play with RSL-RL agent."""
+    # try to import helper for loading published pretrained checkpoints (Isaac Lab >= certain versions)
+    # this import is done lazily so that older Isaac Lab installs without this module still work
+    try:
+        from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint  # type: ignore
+    except ModuleNotFoundError:
+        def get_published_pretrained_checkpoint(*_, **__):  # type: ignore
+            raise ImportError(
+                "The function 'get_published_pretrained_checkpoint' is not available in this Isaac Lab version. "
+                "Please either update Isaac Lab or provide '--checkpoint' explicitly instead of "
+                "'--use_pretrained_checkpoint'."
+            )
+
     # parse configuration
     env_cfg = parse_env_cfg(
         args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric

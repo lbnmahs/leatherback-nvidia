@@ -24,7 +24,9 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackStage1SoccerEnvCfg,
+        "rsl_rl_ppo_cfg_entry_point": f"{agents.__name__}:rsl_rl_ppo_cfg.yaml",
         "harl_happo_cfg_entry_point": f"{agents.__name__}:harl_happo_cfg.yaml",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
     },
 )
 
@@ -34,7 +36,10 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackStage2AdversarialSoccerEnvCfg,
+        "rsl_rl_ppo_cfg_entry_point": f"{agents.__name__}:rsl_rl_ppo_cfg.yaml",
         "harl_happo_cfg_entry_point": f"{agents.__name__}:harl_happo_cfg.yaml",
         "harl_happo_adv_cfg_entry_point": f"{agents.__name__}:harl_happo_adv_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
     },
 )

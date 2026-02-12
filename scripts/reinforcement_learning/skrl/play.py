@@ -84,11 +84,11 @@ elif args_cli.ml_framework.startswith("jax"):
 
 from isaaclab.envs import DirectMARLEnv, multi_agent_to_single_agent
 from isaaclab.utils.dict import print_dict
-from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 
 from isaaclab_rl.skrl import SkrlVecEnvWrapper
 
 import isaaclab_tasks  # noqa: F401
+import leatherback.tasks  # noqa: F401
 from isaaclab_tasks.utils import get_checkpoint_path, load_cfg_from_registry, parse_env_cfg
 
 # PLACEHOLDER: Extension template (do not remove this comment)
@@ -102,6 +102,18 @@ def main():
     # configure the ML framework into the global skrl variable
     if args_cli.ml_framework.startswith("jax"):
         skrl.config.jax.backend = "jax" if args_cli.ml_framework == "jax" else "numpy"
+
+    # try to import helper for loading published pretrained checkpoints (Isaac Lab >= certain versions)
+    # this import is done lazily so that older Isaac Lab installs without this module still work
+    try:
+        from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint  # type: ignore
+    except ModuleNotFoundError:
+        def get_published_pretrained_checkpoint(*_, **__):  # type: ignore
+            raise ImportError(
+                "The function 'get_published_pretrained_checkpoint' is not available in this Isaac Lab version. "
+                "Please either update Isaac Lab or provide '--checkpoint' explicitly instead of "
+                "'--use_pretrained_checkpoint'."
+            )
 
     # parse configuration
     env_cfg = parse_env_cfg(

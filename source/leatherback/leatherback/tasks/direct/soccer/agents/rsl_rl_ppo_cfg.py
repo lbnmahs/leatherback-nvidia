@@ -9,11 +9,11 @@ from isaaclab_tasks.utils.wrappers.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPp
 
 
 @configclass
-class AnymalCFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+class LeatherbackSoccerStage1PpoRunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 500
     save_interval = 50
-    experiment_name = "anymal_c_flat_direct"
+    experiment_name = "leatherback_soccer_stage1_ppo"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
@@ -38,11 +38,11 @@ class AnymalCFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
 
 
 @configclass
-class AnymalCRoughPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+class LeatherbackSoccerStage2PpoRunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 1500
     save_interval = 50
-    experiment_name = "anymal_c_rough_direct"
+    experiment_name = "leatherback_soccer_stage2_ppo"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
